@@ -1,54 +1,56 @@
 # UCD Autumn Data Programming With R
 
-Welcome to my GitHub repository for the "Data Programming with R" module, taken during the Autumn trimester. This repository contains all my coursework, including assignments and the final project for this course.
+Welcome to my GitHub repository for the "Data Programming with R" module, taken during the Autumn trimester. This repository contains my coursework, including assignments and the final project.
 
-## Assignments Overview
+You can view the hosted solutions and detailed descriptions of the assignments [here](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/).
 
-Each assignment, including the final project, is designed to enhance my proficiency with R, focusing on data manipulation, analysis, and visualization techniques.
-
-### Quarto Task
-The Quarto Task involves creating a reproducible report using Quarto to render R code and outputs neatly.
+## Quarto Task
+The Quarto task focuses on creating a Quarto document that includes loading the MASS package, printing and describing the shrimp dataset, and creating a plot.
 
 - **Files**:
-  - `Quarto_Task.qmd`: Quarto markdown file containing the R code.
-  - `Quarto_Task.html`: Rendered HTML output showing all code and results.
+  - `Quarto_Task_v2.html`: Assignment instructions.
+  - `Solution.html`: Solution hosted on GitHub Pages.
+  - `Solution.qmd`: Quarto Markdown file with the solutions.
 
-For detailed tasks and outputs, navigate to the [Quarto Task folder](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Quarto-Task).
+For detailed questions and solutions, navigate to the [Quarto Task folder](Quarto-Task).
 
-### Assignment 1
-This assignment focuses on introductory data manipulation and analysis techniques using R.
-
-- **Files**:
-  - `Assignment_1.qmd`: Detailed Quarto markdown file with R code.
-  - `Assignment_1.html`: Rendered HTML document displaying all code and outputs.
-
-For more information, visit the [Assignment 1 folder](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-1).
-
-### Assignment 2
-Building on the foundations set by the first assignment, this involves more complex data tasks and deeper analysis.
+## Assignment 1
+Assignment 1 involves manipulating and analyzing the EurostatCrime2021 dataset, including data manipulation, creating summaries, and generating plots.
 
 - **Files**:
-  - `Assignment_2.qmd`: Quarto markdown file for this assignment.
-  - `Assignment_2.html`: Rendered HTML output document.
+  - `STAT40730_Assignment1_2023.pdf`: Assignment questions.
+  - `Solution.html`: Solution hosted on GitHub Pages.
+  - `Solution.qmd`: Quarto Markdown file with the solutions.
 
-Check out the [Assignment 2 folder](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-2) for detailed questions and solutions.
+For detailed questions and solutions, navigate to the [Assignment 1 folder](Assignment-1).
 
-### Final Project
-The Final Project is a comprehensive application of all the techniques learned throughout the course, focusing on a specific dataset and set of objectives.
+## Assignment 2
+Assignment 2 focuses on analyzing Dublin bike traffic data, including data manipulation, analysis, and creating visualizations.
 
 - **Files**:
-  - `Final_Project.qmd`: Comprehensive Quarto markdown file.
-  - `Final_Project.html`: Rendered HTML document of the project.
+  - `Assignment_2.pdf`: Assignment questions.
+  - `Solution.html`: Solution hosted on GitHub Pages.
+  - `Solution.qmd`: Quarto Markdown file with the solutions.
 
-Navigate to the [Final Project folder](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Final-Project) for more details.
+For detailed questions and solutions, navigate to the [Assignment 2 folder](Assignment-2).
+
+## Final Project
+The final project involves finding a dataset of interest, performing analysis, demonstrating an R package, and creating custom functions.
+
+- **Files**:
+  - `STAT40730-Final-Project.pdf`: Assignment questions.
+  - `Solution.html`: Solution hosted on GitHub Pages.
+  - `Solution.qmd`: Quarto Markdown file with the solutions.
+
+For detailed questions and solutions, navigate to the [Final Project folder](Final-Project).
 
 ## Hosted Solutions
-For ease of access and review, all solutions are hosted:
+The solutions for all tasks and assignments are hosted on GitHub Pages for easy access:
 
-- **[Quarto Task Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Quarto-Task/Quarto_Task.html)**
-- **[Assignment 1 Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-1/Assignment_1.html)**
-- **[Assignment 2 Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-2/Assignment_2.html)**
-- **[Final Project Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Final-Project/Final_Project.html)**
+- **[Quarto Task Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Quarto-Task/Solution.html)**
+- **[Assignment 1 Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-1/Solution.html)**
+- **[Assignment 2 Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Assignment-2/Solution.html)**
+- **[Final Project Solution](https://shubhgaur37.github.io/UCD-Autumn-Data-Programming-With-R/Final-Project/Solution.html)**
 
 ## Contact
 For queries or further discussion on these projects, please reach out via email at shubhgaur7833@gmail.com.
