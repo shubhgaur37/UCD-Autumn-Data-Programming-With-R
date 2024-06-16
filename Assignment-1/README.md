@@ -7,6 +7,7 @@ This directory contains Assignment 1 for the "Data Programming with R" module, f
 - **Objective**: Apply R programming skills to perform data manipulation and analysis.
 - **Files**:
   - `STAT40730_Assignment1_2023.pdf`: Assignment instructions.
+  - `EurostatCrime2021.xlsx`: Dataset used for the analysis.
   - `Solution.qmd`: Quarto Markdown file with the solutions.
   - `Solution.html`: Solution hosted on GitHub Pages.
 

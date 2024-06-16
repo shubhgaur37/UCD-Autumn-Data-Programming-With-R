@@ -7,6 +7,7 @@ This directory contains Assignment 2 for the "Data Programming with R" module, f
 - **Objective**: Apply R programming skills to perform data analysis and visualization.
 - **Files**:
   - `Assignment_2.pdf`: Assignment instructions.
+  - `dublin-bikes-v2.txt`: Dataset used for the analysis.
   - `Solution.qmd`: Quarto Markdown file with the solutions.
   - `Solution.html`: Solution hosted on GitHub Pages.
 

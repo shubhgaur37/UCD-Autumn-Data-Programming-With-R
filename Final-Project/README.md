@@ -7,6 +7,7 @@ This directory contains the final project for the "Data Programming with R" modu
 - **Objective**: Apply R programming skills to analyze a dataset, demonstrate an R package, and create custom functions.
 - **Files**:
   - `STAT40730-Final-Project.pdf`: Assignment instructions.
+  - `data.xlsx`: Dataset used for the analysis.
   - `Solution.qmd`: Quarto Markdown file with the solutions.
   - `Solution.html`: Solution hosted on GitHub Pages.
 
