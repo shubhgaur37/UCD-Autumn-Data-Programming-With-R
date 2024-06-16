@@ -1,0 +1,316 @@
+---
+title: "Assignment 2 : Dublin Bikes Dataset"
+author: "Shubh Gaur - 23200555"
+format: 
+  html:
+   embed-resources: true
+  pdf: 
+    geometry:
+    - top=20mm
+    - left=15mm
+    - heightrounded
+execute: 
+  error: true
+---
+
+## Importing libraries
+
+```{r}
+#| message: False
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+# Introduction
+
+In the following report we intend to perform EDA on the Dublin bikes dataset.
+
+# Task 1
+
+## Reading data
+
+Using the function read.csv() and passing the delimiter as a tab space(\t) to match the text file containing the data and converting it into tibble using as_tibble() function from the tidyverse package.
+
+```{r}
+dbikes_data <- as_tibble(read.csv('dublin-bikes-v2.txt',sep='\t'))
+head(dbikes_data,width = 84, strict.width = "cut")
+```
+
+## Changing variable names to meaningful column names
+
+Lets first check the existing variable names
+
+```{r}
+colnames(dbikes_data) 
+```
+
+According to the dataset description:<br> - rain: Precipitation amount(mm)<br> - temp: Air temperature(°C)<br> - wdsp: Mean hourly wind speed(knots)<br> - clamt: Cloud amount(okta)<br>
+
+Lets change the names of these variables using indexes.
+
+```{r}
+colnames(dbikes_data)[2] <- 'Precipitation Amount'
+colnames(dbikes_data)[3] <- 'Air Temperature'
+colnames(dbikes_data)[4] <- 'Mean Hourly Windspeed'
+colnames(dbikes_data)[5] <- 'Cloud Amount'
+
+#Verification for changed variable names
+colnames(dbikes_data)
+```
+
+We can see that variable names are looking more meaningful now.
+
+Lets check the dimensions of the dataset using dim() function
+
+```{r}
+dim(dbikes_data)
+```
+
+From the output it is clear that the dataset has **8760** rows and **12** columns.
+
+Lets have a look on the datatypes of all the variables in the dataset and see if they are appropriate.
+
+We can get to know about the datatypes of different variables in the dataset by looking at the structure of the dataset using str() function.
+
+```{r}
+str(dbikes_data,width = 84, strict.width = "cut")
+```
+
+It is clear from the structure that the datatype of variable Time is not stored in correct format and is stored as **string**/**character**,it needs to be changed.Moreover, only **Precipitation Amount** and **Air Temperature** is stored as numeric and rest all(except Time) the variables are integers.
+
+Lets change the datatype for **Time** to an appropriate date/time type and also convert the remaining non-numeric variables to numeric.
+
+We can convert the remaining non-numeric columns by iterating over the variable names using colnames() function which returns a character vector and then indexing it inside the loop such that first 3 and 5th variable i.e. cloud amount(categorical variable) in the vector are excluded,then changing the datatype of variables in the dataset using the column names in the list and changing the respective variable type to numeric using as.numeric() function.
+
+Finally we will again verify the structure of the dataframe using the str() function and see if the data types have been modified or not.
+
+```{r}
+dbikes_data$Time <- ymd_hms(dbikes_data$Time)
+time_series_df=data.frame(dbikes_data)
+# Iterating over all variable names except first three
+for (name in colnames(dbikes_data)[c(-1:-3,-5)]){
+  dbikes_data[[name]] <- as.numeric(dbikes_data[[name]])
+}
+rm(name) #removing the variable after use
+# Checking the structure
+str(dbikes_data,width = 84, strict.width = "cut")
+```
+
+The variable **Time** has the type **POSIXct** which is a datatype to represent date and time in R. It is clear from the structure that the non-numeric columns have been converted into numeric columns.However, integers can also be considered as a numeric type, the only difference being absence of a decimal point.
+
+Note: Cloud Amount has been excluded from conversion as it may be used later as a categorical variable.
+
+Lets Convert Cloud Amount variable into an ordered factor since it represents different categories for cloud amount.
+
+We can use the factor() with ordered=TRUE to convert the Cloud Amount variable into an ordered factor and then check the levels of the variable using levels() function.
+
+```{r}
+dbikes_data$`Cloud Amount` <- factor(dbikes_data$`Cloud Amount`,ordered=TRUE,levels=c(0:8))
+levels(dbikes_data$`Cloud Amount`)#Checking the levels
+```
+
+Lets add two columns representing day of the week and month in the dataframe in the form of ordered factors.\
+We can do this by using functions wday() and month() with labels = TRUE, which return the respective weekdays and months from a **Date** object in the form of non-numeric ordered factors.
+
+```{r}
+dbikes_data <- mutate(dbikes_data,Weekday=wday(Time,label=TRUE),Month=month(Time,label=TRUE))
+#Checking the levels for the newly added columns
+levels(dbikes_data$Weekday)
+levels(dbikes_data$Month)
+```
+
+It is clear from the output that two new columns namely Weekday and Month have been added to the dataframe as ordered factors.
+
+Now, Lets segregate the remaining components of variable time into new columns and then remove it.<br> The remaining conmponents are listed below:<br> - date<br> - hour<br>
+
+This can be done by calling the day() and hour() fxn from the lubridate package on the variable Time. After the addition of columns, we need to relocate the newly added columns to the start i.e. before the column Precipitation Amount as it will become the first column after removal of variable **Time**.
+
+```{r}
+dbikes_data <- mutate(dbikes_data,Date=day(Time),Hour=hour(Time)) |> select(-Time) |> relocate(c("Date","Hour","Weekday","Month"),.before="Precipitation Amount")
+
+str(dbikes_data,width = 84, strict.width = "cut")
+```
+
+Now, lets check if there are 24 hours for each date and there are 365 unique dates We can do this by grouping the dataframe based on Date and summarizing the number of unique hour values associated with each date and filtering out those dates which are not equal to 24.If the summary has 31 rows then all the dates have data for 24 hours otherwise not.
+
+```{r}
+hours_per_date <- dbikes_data |>
+  group_by(Date) |>
+  summarise(Num_Hours = length(unique(Hour))) |> 
+  filter(Num_Hours==24)
+
+head(hours_per_date,width = 84, strict.width = "cut")
+```
+
+Checking the number of rows
+
+```{r}
+nrow(hours_per_date)
+```
+
+As we can see the summary dataframe has 31 observations which mean that all the dates have 24 hours data.
+
+Similarly, we can check if there are 365 unique dates by grouping the results based on month summarising the total unique values of dates for each month.
+
+```{r}
+days_per_month <- dbikes_data |>
+  group_by(Month) |>
+  summarise(Num_Days = length(unique(Date)))
+
+head(days_per_month,width = 84, strict.width = "cut")
+```
+
+We can calculate the sum of variable Num_days to find out the count of distinct dates within the dataset.
+
+```{r}
+sum(days_per_month$Num_Days)
+```
+
+As we can see, that total number of distinct dates in the dataset are 365.
+
+# Task 2
+
+Now, the data pre-processing step is complete and we intend to find some insights from the data.
+
+Lets compute which month had the highest and lowest total precipitation. It can be done using tapply() function from base R.It will require three parameters namely precipitation amount,month(grouping will be done based on it),function to apply which in this case would be sum().
+
+We can create a table using the result we got from tapply() by passing it into the kable() function. Note: kable_styling() function from kable extras package is being used here to increase width between columns.
+
+#### Highest and lowest overall precipitation by months
+
+```{r}
+tapply(dbikes_data$`Precipitation Amount`,dbikes_data$`Month`,sum) |> sort(decreasing = TRUE) |> 
+  kable(booktabs = TRUE,col.names=c("Month","Total Precipitation Amount (mm)")) |> 
+  kable_styling(full_width = TRUE,position = "center")
+```
+
+It is clear from the table that **July**had the highest rainfall with total precipitation amount of **149.3 mm**.On the other hand **February** had the lowest rainfall with precipitation amount of **16.2 mm**.
+
+#### Time Series Plot for maximum and minimum daily temperatures
+
+Lets do something interesting and create a time series plot of maximum and minimum air temperatures based on months.
+
+We can calculate the daily maximum and minimum temperatures by grouping the Time variable by date using the date() function function of lubridate package and then summarising the max_temperature and min_temperatures using the min() and max() function in summarise() function.
+
+We can then use the summary we created for daily maximum and minimum temperatures to plot the time series using ggplot2.
+
+Note: To plot the time series we'll be using our earlier version of dataframe which we saved which included the variable Time.
+
+```{r}
+#Summarizing the data after grouping on rounded off dates
+daily_temperatures <- time_series_df |> group_by(Day=date(Time)) |> 
+  summarise(Max_Temperature = max(`Air.Temperature`), Min_Temperature = min(`Air.Temperature`))
+
+
+#Plotting the time series curve for maximum 
+ggplot(daily_temperatures, aes(x = Day)) +
+  geom_line(aes(y = Max_Temperature, color = "Max Temperature")) +
+  geom_line(aes(y = Min_Temperature, color = "Min Temperature")) +
+  labs(x="Time Period",y = "Temperature(°C)") +
+  ggtitle("Time Series Plot of Daily Maximum and Minimum Temperature") +
+  theme_minimal() +
+  scale_color_manual(values = c("Max Temperature" = "red", "Min Temperature" = "cyan"))
+```
+
+#### Summarizing average rains for weekends and weekdays
+
+Before summarizing the data we need to add a new column Day_Type in the dataframe which will tell whether the day is a weekday(Mon-Fri) or a weekend day(Sat-Sun) and then we can summarize on the mean precipitation amount over the dataframe by grouping on Day_Type.
+
+Given below is the demonstration of the discussed approach.
+
+```{r}
+dbikes_data <- dbikes_data |> mutate(Day_Type=ifelse(Weekday %in% c("Sat","Sun"),"Weekend Day(Sat-Sun)","Week Day(Mon-Fri)"))
+
+kable(dbikes_data |> group_by(Day_Type) |> 
+        summarize(`Average Rain (mm)`= mean(`Precipitation Amount`)) |> 
+        arrange(desc(`Average Rain (mm)`)),booktabs=TRUE) |> 
+        kable_styling(full_width = TRUE,position = "center")
+```
+
+Its Clear from the table that weekend days**(Saturday-Sunday)** experience more average rainfall than weekdays**(Monday-Friday)**
+
+Now, Lets focus on the data of **Griffith Avenue (Lane Side)** for the month of **January** and create plots of daily mean traffic volume and daily mode cloud amount.
+
+For this first we need to implement a function to calculate mode. We have implemented the following function by creating a table of frequencies of the vector passed to the fxn and then return the numeric value of the element with the highest frequency is returned.
+
+Note: max(tbl) here gives the maximum frequency present in the table and using names() function we are fetching the value associated with that frequency and returning it.
+
+```{r}
+#| warning: false
+#| message: false
+mode_fxn <- function(x) {
+  tbl <- table(x)
+  mode_out <- as.numeric(names(tbl[tbl == max(tbl)]))
+  return (mode_out)
+}
+
+dbikes_df_January <- filter(dbikes_data,Month=="Jan")
+traffic_volumes <- dbikes_df_January |> group_by(Date) |> 
+  summarize("Mode Cloud Amount" = mode_fxn(`Cloud Amount`),"Mean Traffic Volume (Bicycles)"=mean(Griffith.Avenue..Lane.Side.))
+
+head(traffic_volumes,width = 84, strict.width = "cut")
+```
+
+Lets create a plot for daily traffic volumes using the newly created dataframe.
+
+```{r}
+#| message: false
+#| warning: false
+ggplot(traffic_volumes, aes(x = Date)) +   
+geom_line(aes(y = `Mean Traffic Volume (Bicycles)`),color="red") +
+geom_point(aes(y = `Mean Traffic Volume (Bicycles)`),color="blue")+
+labs(title="Plot of Daily Traffic Volume (Griffith Avenue - Lane Side) for the month of January") +
+theme_minimal()
+```
+
+Looking at the graph we observe that:<br> - Traffic volume was at its peak between 10th-15th January. - Traffic volume was at its lowest betwween 20th-22nd January. - Traffic volume was significantly low during the starting and ending of the month.
+
+Now, lets create a plot for daily mode cloud amount using the newly created dataframe.
+
+```{r}
+#| message: false
+#| warning: false
+ggplot(traffic_volumes, aes(x = Date)) +   
+geom_line(aes(y = `Mode Cloud Amount`),color="blue") +
+geom_point(aes(y = `Mode Cloud Amount`),color="red")+
+labs(title="Plot of Daily Cloud Amount (Griffith Avenue - Lane Side) for the month of January",y="Cloud Amount")+
+theme_minimal()
+```
+
+Looking at the graph we observe that:<br> - the month of January was mostly cloudy based on the okta value(7). - The weather had been clear for very few days(5 days,considering cloud_amount \<= 2 okta) in January.
+
+# Task 3
+
+Lets take a look at the average windspeed values per month.
+
+We can construct a table of mean hourly windspeed values and group it based on month using tapply() function to get mean wind speed values for each month.
+
+```{r}
+tapply(dbikes_data$`Mean Hourly Windspeed`,dbikes_data$Month,mean) |> 
+  sort(decreasing = TRUE) |> 
+  kable(booktabs = TRUE,col.names=c("Month","Mean Windspeed(knots)")) |> 
+  kable_styling(full_width = TRUE,position = "center")
+```
+
+According to the following table, we observe that month of **January** had the highest mean windspeed whereas the mean windspeed was at its lowest during May.
+
+Now, Lets create a timeseries plot for daily maximum and minimum windspeed values.
+
+```{r}
+#Summarizing the data after grouping on rounded off dates
+daily_wdsp_values <- time_series_df |> group_by(Day=date(Time)) |> 
+  summarise(Max_Windspeed = max(Mean.Hourly.Windspeed), Min_Windspeed = min(Mean.Hourly.Windspeed))
+
+
+#Plotting the time series curve for maximum and minimum windspeed values
+
+ggplot(daily_wdsp_values, aes(x = Day)) +
+  geom_line(aes(y = Max_Windspeed, color = "Max Windspeed"),color="red") +
+  geom_line(aes(y = Min_Windspeed, color = "Min Windspeed"),color="green") +
+  labs(x="Time Period",y = "Windspeed(knots)") +
+  ggtitle("Time Series Plot of Daily Maximum and Minimum Windspeed Values") +
+  theme_minimal()
+```
+
+Looking at the following graph we infer that:<br> - The max windspeed reached its maximum during the period of October 2023 - Jan 2023, March 2023 - April 2023 and then again between Jul 2023 and Aug 2023.<br> - The min windspeed reached its minimum many times throughoput the whole year and but it was at its lowest during April 2023 - Jul 2023.

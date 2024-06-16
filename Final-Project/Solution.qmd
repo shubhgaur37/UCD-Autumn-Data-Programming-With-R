@@ -1,0 +1,528 @@
+---
+title: "STAT40730 FINAL PROJECT"
+author: "Shubh Gaur - 23200555"
+format: 
+  html:
+   embed-resources: true
+  pdf: 
+    geometry:
+    - top=18mm
+    - left=15mm
+    - heightrounded
+execute: 
+  error: true
+---
+
+## Important Note
+
+When running all code chunks together, a prompt to restart R with the installed packages loaded will be displayed. Simply click cancel or restart R and run all code chunks after commenting **install.packages()** function usages in the qmd.
+
+## Importing Libraries
+
+library(readxl)
+
+```{r}
+#| label: import_libs
+#| message: false
+
+library(tidyverse)
+library(knitr)
+library(gridExtra)
+```
+
+## A
+
+### Dataset Description
+
+We are going to work with a dataset which contains information about student entrants, students enrolled(either part time or full time) in third level courses across various Irish Universities for the years 2000 - 2017.
+
+We aim to generate useful insights using this data so that we can better understand about demography of Ireland's higher level education. Link to the dataset: https://data.cso.ie/table/EDA99
+
+### Importing the dataset
+
+Lets begin with importing the dataset.
+
+```{r}
+#| message: false
+third_level_education_data <- read_excel("data.xlsx")
+head(third_level_education_data,width = 84, strict.width = "cut")
+```
+
+### Data Preprocessing
+
+The column names are too big lets modify them for our convenience.
+
+```{r}
+#| message: false
+names(third_level_education_data)=c("Institution","Year","Full Time Enrolments","Part Time Enrolments","New Entrants")
+head(third_level_education_data,width = 84, strict.width = "cut")
+```
+
+Lets have a look at structure of the data using str() function.
+
+```{r}
+#| message: false
+str(third_level_education_data,width = 84, strict.width = "cut")
+```
+
+It is clear from the above output that each variable has **756** observations which might reduce post dropping rows with missing values, if present. Furthermore, the variables **Full Time Enrolments**, **Part Time Enrolments**, **New Entrants** is of the form numeric whereas variables **Institution** & **Year** contain categorical(character/textual) data.
+
+#### Handling missing data
+
+Lets check for missing values in the data by negating the output of **complete.cases()** function on our data set. If we try to find the sum of this logical vector we will get the frequency of **1s** which will tell us about the count of missing values.
+
+```{r}
+cat(paste("Number of records with missing entries = ",sum(!complete.cases(third_level_education_data))))
+```
+
+It is clear from the output that our data has 192 rows with missing values. Lets remove these rows and see the count of missing values.
+
+```{r}
+third_level_education_data <- filter(third_level_education_data,complete.cases(third_level_education_data))
+cat(paste("Number of records with missing entries = ",sum(!complete.cases(third_level_education_data))))
+```
+
+The data is now rid of missing values.
+
+#### Transforming data (numeric and categorical)
+
+Now, We will take care of the categorical data that we have by converting the character variables into **factors** and having a look at unique values through **levels** of the factor.
+
+```{r}
+levels(factor(third_level_education_data$Institution))
+```
+
+The dataset contains data from **41** different institutes within **Ireland** which is clear from the above output i.e **41** levels.
+
+```{r}
+levels(factor(third_level_education_data$Year))
+```
+
+The dataset contains data from **2000 - 2017** of different institutes within **Ireland** which is clear from the above output.
+
+Now, we are sure that these variables are perfect for categorical conversion.
+
+We will be modifying the original dataframe by converting the character variables to categorical.
+
+```{r}
+third_level_education_data$Institution <-  factor(third_level_education_data$Institution)
+third_level_education_data$Year <-  factor(third_level_education_data$Year)
+str(third_level_education_data,width = 84, strict.width = "cut")
+```
+
+### Inferences drawn using exploratory data analysis
+
+The next steps involve performing **exploratory data analysis** on the data to gain better understanding of data and gain some useful insights from it.
+
+Lets check the mean number of **full time enrolments** across all institutions in **Ireland** for all the years.
+
+```{r}
+enrolments_ftime <- tapply(third_level_education_data$`Full Time Enrolments`,third_level_education_data$Year,mean) |> sort(decreasing = TRUE)
+mean_full_time_enrolments_per_year <- data.frame(Year = as.numeric(names(enrolments_ftime)), Mean_Value = as.integer(enrolments_ftime))
+colnames(mean_full_time_enrolments_per_year)=c("Year","Mean Full Time Enrolments")
+
+kable(mean_full_time_enrolments_per_year,booktabs = TRUE)
+```
+
+Now we will list the data using the same methodology for variables **Part time enrolment** and **New Entrants**.
+
+```{r}
+enrolments_ptime <- tapply(third_level_education_data$`Part Time Enrolments`,third_level_education_data$Year,mean) |> sort(decreasing = TRUE)
+mean_part_time_enrolments_per_year <- data.frame(Year = as.numeric(names(enrolments_ptime)), Mean_Value = as.integer(enrolments_ptime))
+colnames(mean_part_time_enrolments_per_year)=c("Year","Mean Part Time Enrolments")
+
+kable(mean_part_time_enrolments_per_year,booktabs = TRUE)
+```
+
+Lets check the mean number of enrolments across all institutions in **Ireland** for all the years.
+
+```{r}
+new_entrants <- tapply(third_level_education_data$`New Entrants`,third_level_education_data$Year,mean) |> sort(decreasing = TRUE)
+mean_new_entrants_per_year <- data.frame(Year = as.numeric(names(new_entrants)), Mean_Value = as.integer(new_entrants))
+colnames(mean_new_entrants_per_year)=c("Year","Mean Number of New Entrants")
+
+kable(mean_new_entrants_per_year,booktabs = TRUE)
+```
+
+Lets visualize the top **10** institutes with respect to mean number of enrolments (part time and full time) and mean number of new entrants over the period **2000 - 2017**.
+
+```{r}
+result <- third_level_education_data %>%
+  group_by(Institution) %>%
+  summarise(mean_enrolments = mean(`Full Time Enrolments`)) %>%
+  arrange(desc(mean_enrolments)) %>%
+  head(10)
+result
+```
+
+From the output above, its difficult to see the top 10 colleges because collective groups\[considering multiple colleges\] are included which is a hindrance in getting top 10 individual institute names which have most number of mean_enrolments over all the years.\
+We can handle this by excluding these collective groups of institute from the dataset which will let us focus on individual institutes. Lets find these collective groups by seeing the **levels** of variable institution to find unique entries.
+
+```{r}
+levels(third_level_education_data$Institution)
+```
+
+Let's create a list of collective institution groups and remove them from the dataset using **filter** function.
+
+```{r}
+# initialising a list containing grouped institution
+institutes_to_remove <- c("Aided university sector", "Higher Education Authority", "Aided technology sector", "Institutes of Technology/Other Technology Colleges","Teacher education colleges","Other colleges","Other third level education institutions aided by DES")
+
+# Filter out rows which don't belong to the specified institutes names
+education_data_individual_institutes <- third_level_education_data %>%
+  filter(!Institution %in% institutes_to_remove) 
+```
+
+```{r}
+result <- education_data_individual_institutes %>%
+  group_by(Institution) %>%
+  summarise(mean_enrolments = mean(`Full Time Enrolments`)) %>%
+  arrange(desc(mean_enrolments)) %>%
+  head(10)
+
+ggplot(result, aes(x = Institution, y = mean_enrolments, fill = Institution)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Top 10 Institutions by Mean Full Time Enrolments",
+       x = "Institutions",
+       y = "Mean Enrolments") +
+  theme(axis.text.x = element_blank(),  # Remove x-axis text
+        legend.position = "right")  # Move legend to the bottom
+
+
+```
+
+From the above plot its clear that **National University of Ireland, Dublin** had the highest number of fulltime enrolments(in average) over the span of 17 years.
+
+```{r}
+result <- education_data_individual_institutes %>%
+  group_by(Institution) %>%
+  summarise(mean_enrolments = mean(`Part Time Enrolments`)) %>%
+  arrange(desc(mean_enrolments)) %>%
+  head(10)
+
+ggplot(result, aes(x = Institution, y = mean_enrolments, fill = Institution)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Top 10 Institutions by Mean Part Time Enrolments",
+       x = "Institutions",
+       y = "Mean Enrolments") +
+  theme(axis.text.x = element_blank(),  # Remove x-axis text
+        legend.position = "right")  # Move legend to the bottom
+```
+
+From the above plot, it is clear that **Dublin Institute of Technology** had the highest number of part time enrolments(in average) over the span of 17 years.
+
+```{r}
+result <- education_data_individual_institutes %>%
+  group_by(Institution) %>%
+  summarise(mean_new_entrants = mean(`New Entrants`)) %>%
+  arrange(desc(mean_new_entrants)) %>%
+  head(10)
+
+ggplot(result, aes(x = Institution, y = mean_new_entrants, fill = Institution)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Top 10 Institutions by Mean number of New Entrants",
+       x = "Institutions",
+       y = "Mean Enrolments") +
+  theme(axis.text.x = element_blank(),  # Remove x-axis text
+        legend.position = "right")  # Move legend to the bottom
+```
+
+From the above plot its clear that **National University of Ireland, Dublin** had the highest number of new entrants(in average) over the span of 17 years.
+
+Lets now try to visualize the trend of enrolments (both part time and full time) and new entrants over the years.
+
+```{r}
+ggplot(mean_full_time_enrolments_per_year, aes(x = Year, y = `Mean Full Time Enrolments`)) +
+  geom_line(color = "blue") +
+  geom_point(color = "red", size = 3) +
+  labs(title = "Trends in fulltime enrolments over the period of 2000-2017") +
+  scale_x_continuous(n.breaks=16) #16 breaks for period of 17 years
+```
+
+According to the scatterplot, the fulltime enrolments(in average) across various institutions in Ireland were the highest in **2007** and lowest in **2000**.
+
+```{r}
+ggplot(mean_part_time_enrolments_per_year, aes(x = Year, y = `Mean Part Time Enrolments`)) +
+  geom_line(color = "green") +
+  geom_point(color = "violet", size = 3) +
+  labs(title = "Trends in parttime enrolments over the period of 2000-2017") +
+  scale_x_continuous(n.breaks=16) #16 breaks for period of 17 years
+```
+
+From the above trend plot, we infer that year **2017** had the most number of part time enrolments while year **2006** had the least number of part time enrolments across various institutions in Ireland.
+
+```{r}
+ggplot(mean_new_entrants_per_year, aes(x = Year, y = `Mean Number of New Entrants`)) +
+  geom_line(color = "red") +
+  geom_point(color = "green", size = 3) +
+  labs(title = "Trends in number of new entrants over the period of 2000-2017") +
+  scale_x_continuous(n.breaks=16) #16 breaks for period of 17 years
+```
+
+From the above trend plot, we infer that year **2007** had the most number of new entrants(in average) while year **2003** had the least number of new entrants across various institutions in Ireland.
+
+## B
+
+### Package Description : reticulate
+
+The reticulate package in R provides an interface to Python from R. It allows us to run Python code within an R session, call Python functions, access Python objects, and even pass data between R and Python. Essentially, reticulate facilitates interoperability between R and Python, enabling you to leverage the strengths of both programming languages in a single analysis or project.
+
+Link: https://cran.r-project.org/web/packages/reticulate/index.html
+
+### Installation & Import Package
+
+**Note**: Uncomment the install.packages() function call in the following code chunk to install the package and then recomment and render the document.
+
+```{r}
+#| message: false
+#| include: false
+#install.packages("reticulate")
+library(reticulate)
+```
+
+### Setting up the python environment using reticulate
+
+Before we can use this package's functionality to run python code we need to set up a few things such as python interpreter,virtual environment and the packages that we wish to use.
+
+The first step will be to set up the python interpretor. We can install the python version of our choice using **install_python** function which inputs **version** as a parameter and installs the python interpretor pertaining to the passed version.
+
+```{r}
+#| message: false
+#| echo: true
+#| warning: false
+
+python_version <- "3.9"
+install_python(version=python_version)
+```
+
+The second step is to create a virtual environment which will use the installed python version. We can create the python virtual environment **virtual_env.create()** function which inputs parameters such as:
+
+-   **envname** : lets us specify the name for the virtual environment.
+
+-   **version** : lets us specify the python version to use for creating the environment.
+
+```{r}
+#| message: false
+#| echo: true
+virtualenv_create(envname="RPythonEnv",version=python_version)
+```
+
+We are now ready to execute python code on R.
+
+But prior to that we need to specify the environment to use for executing our python code which can be done using **use_virtualenv** function which inputs envname to be used which is demonstrated below.
+
+```{r}
+#| message: false
+#| echo: true
+use_virtualenv(virtualenv="RPythonEnv")
+```
+
+### Basic Operations
+
+Lets start executing python code in R.
+
+We can use **py_run_string()** function to execute python code.
+
+We can write some python code and store the result in python variables those python variables will be added in the fields of py_run_string() functions objects.
+
+Lets demonstrate its use to make things clear.
+
+```{r}
+py_run_string("print('This is R to Python')")
+py_run_string("a=10/20")$a
+py_run_string("")$a
+```
+
+In the first line we are trying to print a string, if we use python's print function then the corresponding R output will be identical to the output provided by cat() function.
+
+In the second line, we create a variable **a** in python and assign it value 10/20. Since a is created,it will be added to the fields of py_run_string() object.
+
+In the third line we are trying to show that the the field **a** which was returned is global and will not change or diminish with different invocations of **py_run_string()** function.
+
+Now, Lets try to create a dictionary in python and see what is the corresponding R format.
+
+```{r}
+dict_python_to_r <- py_run_string("d={'hello':'hi','tata':'bye'}")$d
+dict_python_to_r
+class(dict_python_to_r)
+```
+
+R stores a python dictionary in the form of lists.
+
+### Advanced Operations
+
+Now, we will move onto performing some advanced operations such as importing libraries as objects, accessing their functions, etc. We will mainly be demonstrating this on data manipulation libraries such as **pandas** and visualisation libraries such as **matplotlib**.
+
+We can install the libraries that we wish to use using **py_install()** function which takes library_name as the input.
+
+```{r}
+#| message: false
+#| echo: true
+#| output: false
+#| include: false
+py_install("matplotlib")
+py_install("seaborn")
+```
+
+We can import any installed python library into a R object using **import()** function and then use the object name as an alias to call the related functions in the library.
+
+If we want to use any function from the imported library we need to call on it using the **\$** operator.
+
+(Note: **.** operator is used in python to access functions from a module or methods of an object).
+
+We will be demonstrating the use of **pandas** library including but not limited to dataframe conversions from R to python, accessing functions from this module, and **matplotlib** library to plot pie graph for the data used in the previous section. But prior to using matplotlib for visualisation we will need to convert our R dataframe to python dataframe using pandas library.
+
+We will be using the **result** dataframe that we created earlier which contains information of top 10 institutions in Ireland with respect to mean number of new_entrants.
+
+```{r}
+pd <- import("pandas")
+plt <-import("matplotlib.pyplot")
+
+#converting R dataframe to python dataframe
+result_pandas <- pd$DataFrame(result)
+
+#printing first 5 rows using head function in python
+pd$DataFrame$head(result_pandas)
+```
+
+Now, lets plot the pie chart which depicts the proportion of **mean number of new entrants** among the top 10 institutions by mean number of new entrants in Ireland over the period **2000-2017**
+
+```{r}
+#| include: false
+plt$pie(result_pandas$mean_new_entrants, labels=result_pandas$Institution, autopct="%1.1f%%", startangle=90)
+plt$title("PROPORTION OF NEW ENTRANTS ACROSS TOP 10 INSTITUTIONS")
+plt$savefig("piechart.png")
+plt$close() #closing the current plot to prevent it from being shown
+```
+
+We have saved the plot in a png file. Now, we will use the png file to embed the plot in the markdown document.
+
+**Note**: We are not using **plt.show()** method to view the plot because it was opening in a separate window when the document was being rendered and rendered html was not opening until the pie chart was closed.
+
+![PieChart](piechart.png)
+
+According to the above plot, **15.4%** of the new entrants among the these top 10 institutions (considering the period 2000-2017) are enrolled in **National University of Ireland,Dublin**.
+
+## C
+
+Lets create a general S3 class for dataframe.
+
+```{r}
+# Define a S3 class for the dataframe
+df_custom_class <- function(data) {
+  class(data) <- c("custom_dataframe_class", class(data))
+  return(data)
+}
+```
+
+We can now use this class to define customised print, summary, plot functions which will be demonstrated in the coming sections.
+
+### Print Function
+
+Lets define a print function which will print all records in the dataframe along with its column names in a vertical fashion.
+
+```{r}
+# Define a print method for the S3 class
+print.custom_dataframe_class <- function(df) {
+  cat("Records are listed below\n-------------------------\n")
+  
+  # Iterate over each row in the dataframe
+  for (i in 1:nrow(df)) {
+    cat("Row ", i, ":\n")
+    
+    # Iterate over each column in the row
+    for (col in names(df)) {
+      cat(paste(col,":", df[i, col], "\n"))
+    }
+    
+    cat("\n")  # Add a line break between rows
+  }
+}
+# registering the S3 method(needed in Quarto)
+registerS3method("print", "custom_dataframe_class", print.custom_dataframe_class)
+
+#reading the datafile and fetching first 4 records to ensure that output is not very lengthy
+education_data <- read_excel("data.xlsx") |> tail(4)
+
+# Create an object of the custom class
+my_data_custom_class <- df_custom_class(education_data)
+
+# Print the dataframe using the custom print function
+print(my_data_custom_class)
+```
+
+The output for the print function is coming as expected.
+
+### Summary Function
+
+Now, lets define a function for summarizing statistical information for numerical variables in a dataframe.
+
+```{r}
+# Helper function to calculate mode
+# this function will return first value in case frequency of occurrence for multiple values are equal to max frequency of occurrence
+mode_fxn <- function(x) {
+  tbl <- table(x)
+  mode_out <- as.numeric(names(tbl[tbl == max(tbl)]))
+  return (mode_out[1])
+}
+# Defining a summary method for the S3 class
+summary.custom_dataframe_class <- function(df) {
+  cat("Summary for the numerical columns in the provided dataframe is listed below \n----------------------------------------------------------------------------\n")
+  
+  # Iterate over each column in the dataframe
+  for (col in colnames(df)) {
+    if (is.numeric(df[[col]])) {
+      cat("Total Entries:", sum(!is.na(df[[col]])), "\n")#preventing consideration of null values in count
+      cat("Column:", col, "\n")
+      cat("Mean:", mean(df[[col]],na.rm=TRUE), "\n")
+      cat("Median:", median(df[[col]], na.rm = TRUE), "\n")
+      cat("Mode:", mode_fxn(df[[col]]), "\n")
+      cat("Variance:", var(df[[col]],na.rm=TRUE), "\n")
+      cat("Standard Deviation:", sd(df[[col]],na.rm=TRUE), "\n")
+      cat("\n")  # Add a line break between columns
+    }
+  }
+}
+# registering the S3 method(needed in Quarto)
+registerS3method("summary", "custom_dataframe_class", summary.custom_dataframe_class)
+my_data_custom_class$`Full-time Enrolments to Third Level Courses (Number)`[1] <- NA #changing to NA
+summary(my_data_custom_class)
+```
+
+We have 3 numerical variables and we are getting the statistical summaries for all three of them which is as expected.
+
+### Plot Function
+
+Finally, we will create a plot function which will plot the histogram distributions for all the numerical variables present.
+
+```{r}
+#| message: false
+#| warning: false
+# Define a plot method for the custom S3 class
+plot.custom_dataframe_class <- function(df) {
+  # Get numerical columns
+  numeric_cols <- sapply(df, is.numeric)
+  
+  # Select numerical columns from the dataframe
+  numeric_data <- df[, numeric_cols, drop = FALSE]
+  
+  # Convert data to long format for facet wrap
+  df_long <- pivot_longer(numeric_data, cols = everything(), names_to = "Variable", values_to = "Value")
+  
+  # Plot histograms facetted by variable
+  ggplot(df_long, aes(x = Value)) +
+    geom_histogram(fill = "cyan", color ="black",bins=40) +
+    facet_wrap(~Variable, scales = "free") +
+    labs(title = "Distribution for Numerical Columns")
+}
+
+registerS3method("plot", "custom_dataframe_class", plot.custom_dataframe_class)
+
+#we will be utilising our original dataframe used in part A for plotting
+custom_class_data <- df_custom_class(education_data_individual_institutes)
+plot(custom_class_data)
+```
+
+We can observe that the distribution graphs for all the numerical variables are coming as expected.
+
+Note: The functions defined in this section are generalised and will work for all dataframes.

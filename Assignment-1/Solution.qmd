@@ -1,0 +1,214 @@
+---
+title: "ASSIGNMENT 1 : EUROSTAT CRIME DATASET 2021"
+author: "Shubh Gaur(23200555)"
+editor: visual
+format:
+  html: 
+    embed-resources: true
+---
+
+# INTRODUCTION
+
+The dataset EurostatCrime2021.xlsx records offences (values per hundred thousand inhabitants) by offence category in 41 European Countries in 2021.Full information on the dataset is available at: https://ec.europa.eu/eurostat/cache/metadata/en/crim_off_cat_esms.htm.
+
+## Importing Libraries
+
+```{r}
+#| label: Lib_import
+#| warning: false
+#| echo: false
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+```
+
+## Task 1
+
+### Question 1
+
+```{r}
+#| label: load_dataset
+#| warning: false
+data <- read_excel('EurostatCrime2021.xlsx',skip=6,na=":")
+rownames(data) <- data$Country
+```
+
+### Question 2
+
+```{r}
+#| label: Task1Q2
+print(paste("Rows in dataset:",nrow(data)))
+print(paste("Columns in dataset:",ncol(data)))
+str(data)
+```
+
+### Question 3
+
+```{r}
+#| warning: false
+#| label: Task1Q3
+#Removing columns Fraud and Money laundering as they contain no data
+cols_to_remove <- c("Fraud","Money laundering")
+for (i in cols_to_remove){
+  print(paste(i,"column exist in dataframe:",i %in% colnames(data) ))
+}
+data <- select(data,-cols_to_remove)
+for (i in cols_to_remove){
+  print(paste(i,"column exist in dataframe:",i %in% colnames(data) ))
+}
+str(data)
+```
+
+### Question 4
+
+```{r}
+#| warning: false
+#| label: Task1Q4
+#removing columns with substrings "burglary" and "theft"
+substrings <- c('burglary','theft')
+colnames_substr <- c() # for finding column names of matches
+for (str in substrings) {
+  colnames_substr <- c(colnames_substr,colnames(data)[grep(str,str_to_lower(colnames(data)))])
+}
+
+if (length(colnames_substr)!=0){
+# changing the dataframe with the ones with specified columns removed
+data |> select(-colnames_substr) -> data
+
+for (i in colnames_substr){
+  cat(paste0("\"",i,"\" column exist in dataframe: ",i %in% colnames(data),"\n"))
+}
+}
+```
+
+### Question 5
+
+```{r}
+#| warning: false
+#| label: Task1Q5
+#Adding a column "Total offences" that keeps the count of overall record of offences 
+#for each country (per hundred thousand inhabitants)
+country=data$Country
+data$"Total offences" <- data |> select(-Country) |> rowSums(na.rm = TRUE)
+data$"Total offences"
+
+#Adding country column again to the dataframe and changing the row indexes
+data$Country <- country
+rownames(data) <- data$Country
+```
+
+### Question 6 & Question 7
+
+```{r}
+#| label: Task1Q67
+#Find countries with missing data and remove them
+for (i in rownames(data)){
+  na_count <- sum(is.na(data[i,]))
+  if (na_count>0){
+    print(paste("NA values in",i,":",na_count))
+  }
+  }
+data <- na.omit(data)
+```
+
+### Question 8
+
+```{r}
+#| label: Task1Q8
+print(paste("Total observations in dataset :",nrow(data)))
+print(paste("Total variables in dataset :",ncol(data)))
+```
+
+## Task 2
+
+### Question 1
+
+```{r}
+#| label: Task2Q1
+max_offences <- max(data['Total offences'])
+print(paste("Country having the highest overall record of offences in 2021:",filter(data,`Total offences`==max_offences)$Country))
+```
+
+### Question 2
+
+```{r}
+#| label: Task2Q2
+#| warning: false
+total_cyber_attacks_by_country <- select(data,c('Country','Acts against computer systems'))
+#sorting by column total_offences
+total_cyber_attacks_by_country <- total_cyber_attacks_by_country[order(total_cyber_attacks_by_country$`Acts against computer systems`,decreasing=TRUE),]
+total_cyber_attacks_by_country$`Acts against computer systems` <- format(total_cyber_attacks_by_country$`Acts against computer systems`,nsmall=3)
+# Create a table with the kable function
+table <- kable(total_cyber_attacks_by_country, format = "html", caption = "Table depicting proportion of Acts against computer systems (per hundred thousand inhabitants) by country")
+table
+```
+
+### Question 3
+
+```{r}
+#| warning: false
+ggplot(data,mapping=aes(x=`Unlawful acts involving controlled drugs or precursors`,y=Robbery,colour=Country))+geom_point()+xlab("Drug Trafficking Incidents") +
+  ylab("Robbery Cases")+ labs(title='Robbery Cases Vs Drug Trafficking Incidents by Country (2021)')
+```
+
+## Task 3
+
+### Plot 1
+
+```{r}
+#Plotting a pie chart which depicts percentage of crimes commited by different categories in Ireland in 2021
+
+data_Ireland <- (select(filter(data,Country=='Ireland'),-c("Country","Total offences")))
+crimes <- colnames(data_Ireland)
+magnitude <- as.numeric(data_Ireland[1,])
+data_Ireland <- data.frame(crimes,magnitude)
+
+# Calculate the percentage for each category
+data_Ireland$percentage <- (data_Ireland$magnitude / sum(data_Ireland$magnitude)) * 100
+
+
+# Create a pie chart with labels and custom styling
+pie_chart <- ggplot(data_Ireland, aes(x = "", y = percentage, fill = crimes)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_minimal() +
+  labs(title = "Crimes commited in different categories - Ireland(2021)",fill="Crimes")
+pie_chart
+```
+
+### Plot 2
+
+```{r}
+#| warning: false
+# Plotting a bar chart for top 10 least safe countries for women
+
+# reading the original_dataset again as some rows which had some NA entries have been removed
+data <- read_excel('EurostatCrime2021.xlsx',skip=6,na=":")
+
+#replacing NA values with 0
+data[is.na(data)] <- 0
+rownames(data) <- data$Country
+
+#selecting required rows
+crimes_against_women_data <- select(data,c("Country","Rape","Sexual assault","Sexual exploitation"))
+crimes_against_women_data$`Total Crimes`=crimes_against_women_data$Rape+crimes_against_women_data$`Sexual assault`+crimes_against_women_data$`Sexual exploitation`
+
+#sorting by column Total Crimes
+crimes_against_women_data <- crimes_against_women_data[order(crimes_against_women_data$`Total Crimes`,decreasing=TRUE),]
+
+#Creating a vector colors to specify different colors for different bars[white color excluded]
+colors <- sample(setdiff(colors(), "white"), 10)
+
+# Create the barplot
+p <- ggplot(crimes_against_women_data[1:10,], aes(x = Country, y = `Total Crimes`, fill = Country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top 10 unsafe countries for women", 
+       x = "Countries", y = "Total crimes against women") +
+  scale_fill_manual(values = colors) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+# Add visible y-axis ticks
+p + theme(axis.text.y = element_text(size = 12),plot.title = element_text(hjust = 0.5))
+```

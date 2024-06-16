@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="page-columns page-rows-contents page-layout-article">
+
+<main class="content">
+
+<header class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Quarto Task</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Isabella Gollini </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section class="level3">
+<h3 class="anchored">Instructions</h3>
+<ul>
+<li>This assignment is due on <strong>Wednesday 27th September 2023</strong> at 11:59pm.</li>
+<li>You should submit your assignment to the ‘Quarto Task’ assignment object in Brightspace.</li>
+<li>You should submit 2 or 3 files only depending on your final format:
+<ol type="1">
+<li>Qmd file and</li>
+<li>the final document in either HTML, or pdf.</li>
+<li><strong>Only if you are rendering to HTML:</strong> a pdf file obtained by converting the HTML to pdf.
+<ul>
+<li>You can use Google Chrome. File &gt; Print &gt; Destination [Change. . . ] &gt; select Save as PDF.</li>
+</ul></li>
+</ol></li>
+<li>You may submit it multiple times before the deadline, but only the last version will be marked.</li>
+<li>Late submissions will score 0, unless a “Late Submission of Coursework” form is submitted.</li>
+<li>This task is worth 2% of your final grade.</li>
+</ul>
+</section>
+<section class="level3">
+<h3 class="anchored">Quarto Task</h3>
+<p>Create a self-contained Quarto Document (You are free to decide the format of the output: HTML, or pdf) which contains the following:</p>
+<ol type="1">
+<li><p>Main Title: “Quarto Task”</p></li>
+<li><p>Author: Your Name &amp; Student Number</p></li>
+<li><p>Title of the first section: “Load the MASS package”</p></li>
+<li><p>In the first section you have to load the <code>MASS</code> package</p></li>
+<li><p>Title of the second section: “The shrimp dataset”</p></li>
+<li><p>In the second section you have to print the object <code>shrimp</code></p></li>
+<li><p>Write a brief description of the object <code>shrimp</code> (hint: look at the help file)</p></li>
+<li><p>Title of the third section: “Plot”</p></li>
+<li><p>In the third section you have to show a simple plot of <code>shrimp</code></p></li>
+</ol>
+<ul>
+<li>Knit your document to either pdf, or HTML
+<ul>
+<li>To knit to pdf you need to have LaTeX installed. You can install it by typing the following commands on the Console in RStudio:</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span><a rel="noopener" href="#cb1-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;tinytex&quot;</span>)</span>
+<span><a rel="noopener" href="#cb1-2"></a>tinytex<span class="sc">::</span><span class="fu">install_tinytex</span>()</span></code><i class="bi"></i></pre></div>
+</div>
+<ul>
+<li>Remember that if you decide to produce an HTML output you must have the following on your YAML header:</li>
+</ul>
+<pre><code>format: 
+  html:
+    embed-resources: true</code></pre>
+<ul>
+<li><p>Check your final document and ensure that it shows all the R code you used [never use <code>echo: FALSE</code> or <code>include: FALSE</code>]</p></li>
+<li><p>Submit (on Brightspace) 2 or 3 files depending on your final format:</p>
+<ol type="1">
+<li>Qmd file and</li>
+<li>the final document in either HTML, or pdf.</li>
+<li><strong>Only if you are rendering to HTML:</strong> a pdf file obtained by converting the HTML to pdf.
+<ul>
+<li>You can use Google Chrome. File &gt; Print &gt; Destination [Change. . . ] &gt; select Save as PDF.</li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+
+</main>
+
+
+</div> 
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.23.9-217/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.5,
+							'renderLatex': true
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.23.9-217/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>

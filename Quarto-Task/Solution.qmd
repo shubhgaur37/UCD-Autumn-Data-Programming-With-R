@@ -1,0 +1,30 @@
+---
+title: "Quarto Task"
+author: "Shubh Gaur(23200555)"
+format:
+  html: 
+    embed-resources: true
+  pdf: default
+---
+
+## Load The **MASS** package
+
+```{r}
+#| label: load-mass-package
+library("MASS")
+```
+
+## The **shrimp** dataset
+
+```{r}
+shrimp
+```
+
+A numeric vector with 18 conclusions by various research facilities of the quantity (level of the proclaimed complete weight) of shrimp in shrimp cocktail(seafood dish).
+
+## Plot
+
+```{r}
+barplot(shrimp,names=c(1:18))
+title(main = "Bar plot for shrimp percentage in\n shrimp cocktail by different labs")
+```
